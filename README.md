@@ -19,7 +19,7 @@ The following animation shows a shot of final results of this Fully Convolutiona
 This neural network is by using *Layer 3, 4, 7* from vgg and having 1x1 convolutional layers,skip connections and upsampling. The following pictures show a short brief about these three special layers. (*pictures provided from Udacity*)
 
 1x1 Convolution  ------>  |     Upsampling ------>        |      Skip Connections     |
-:--------------------:|:---------------------:|:----------------------
+:--------------------:|:------------------------:|:----------------------
 ![1x1conv](./sources/1x1conv.png)|![upsample](./sources/upsample.png)   |![skip](./sources/skipconnect.png)
 
 
@@ -27,7 +27,7 @@ This neural network is by using *Layer 3, 4, 7* from vgg and having 1x1 convolut
 ## FCN(Fully Convolutional Network)
 FCN is conprised of two main parts:encoder && decoder. The mechanism behind this network is that endocer extracts features that will later be used by decoder and decoder upscales the output of encoder. The following brief graph of the construction of the FCN is shown below. (*pictures provided from Udacity*)
 
-|--------------------Vgg Model------------------|------------1x1 Conv-------|------------Upsampling----------------|
+|--------------------Vgg Model------------------|---------1x1 Conv-------|---------------Upsampling----------------|
 
 ![fcn](./sources/fcn.png)
 
