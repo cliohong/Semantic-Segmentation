@@ -25,9 +25,9 @@ This neural network is by using *Layer 3, 4, 7* from vgg and having 1x1 convolut
 
 
 ## FCN(Fully Convolutional Network)
-FCN is conprised of two main parts:encoder && deconder. The mechanism behind this network is that endocer extracts features that will later be used by deconder and deconder upscales the output of encoder. The overall view of the construction of the FCN is shown below. (*pictures provided from Udacity*)
+FCN is conprised of two main parts:encoder && decoder. The mechanism behind this network is that endocer extracts features that will later be used by decoder and decoder upscales the output of encoder. The following brief graph of the construction of the FCN is shown below. (*pictures provided from Udacity*)
 
-  Vgg Model       |        1x1 Conv       |      Upsampling     |
+:---Vgg Model------------:|:-------------1x1 Conv---------:|:-----------Upsampling-------- :|
 
 ![fcn](./sources/fcn.png)
 
