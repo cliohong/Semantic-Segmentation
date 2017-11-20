@@ -52,33 +52,6 @@ def load_vgg(sess, vgg_path):
 
 tests.test_load_vgg(load_vgg, tf)
 
-def get_bilinear_weights(filter_shape, upscale_factor):
-    #from http://cv-tricks.com/image-segmentation/transpose-convolution-in-tensorflow/
-    
-    kernel_size = filter_shape[1] ##shape of filter: width, height, no.of in-channels, no.of out-channels
-    #centre location of the filter for which value is calculated
-    if kernel_size% 2 == 1:
-        centre_location = upscale_factor - 1
-    else:
-        centre_location = upscale_factor - 0.5
-        
-    bilinear = np.zeros([filter_shape[0],filter_shape[1]])
-    
-    for x in range(filter_shape[0]):
-        for y  in range(filter_shape[1]):
-            ##interpolation function
-            value = (1 - abs((x - centre_location)/upscale_factor))*(1-abs((y - centre_location)/upscale_factor))
-            bilinear[x,y]=value ## fill values in all elements in bilinear
-            
-    weights= np.zeros(filter_shape)
-    
-    for i in range(filter_shape[2]):
-        weights[:, :,i, i] = bilinear
-
-    init_weights = tf.constant_initializer(value= weights, dtype= tf.float32)
-
-    return init_weights
-
 
 def conv1x1(x, num_outputs):
   ##for encoder process
@@ -86,32 +59,6 @@ def conv1x1(x, num_outputs):
     stride = 1
     return tf.layers.conv2d(x, num_outputs, kernel_size, stride)
 
-def upsample_layer(bottom, n_channels, name, upscale_factor):
-    #from http://cv-tricks.com/image-segmentation/transpose-convolution-in-tensorflow/
-    # takes input tenor "bottom" and puts a deconv layer on top of it
-    
-    kernel_size = 2* upscale_factor - upscale_factor%2
-    
-    strides = [1, upscale_factor, upscale_factor, 1]
-    
-    with tf.variable_scope(name):
-        #shape of the bottom tensor
-        in_shape = tf.shape(bottom)
-        
-        h=  ((in_shape[1] - 1) * strides[1]) +1
-        w = ((in_shape[2]- 1)  * strides[2]) +1
-        new_shape = [in_shape[0], h, w, n_channels]
-        output_shape = tf.stack(new_shape)
-        
-        filter_shape = [kernel_size, kernel_size, n_channels, n_channels]
-        weights = get_bilinear_weights(filter_shape, upscale_factor)
-#        deconv = tf.nn.conv2d_transpose(bottom, weights, output_shape,strides=strides, padding = 'SAME')
-        deconv = tf.layers.conv2d_transpose(bottom, n_channels, kernel_size, upscale_factor, 'SAME',kernel_initializer=weights)
-
-    return deconv
-
-
-        
     
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
@@ -124,13 +71,10 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # TODO: Implement function
     layer7_1x1 = conv1x1(vgg_layer7_out, num_classes)
-#    layer7_upsampled = upsample_layer(layer7_1x1,num_classes, "layer7_upsampled", 2)
+
     layer4_1x1 = conv1x1(vgg_layer4_out, num_classes)
-#    layer4_7_fused= tf. add(layer4_1x1, layer7_upsampled)
-#    layer4_7_upsampled = upsample_layer(layer4_7_fused, num_classes, "layer4_7_upsampled",2)
+
     layer3_1x1 = conv1x1(vgg_layer3_out, num_classes)
-#    layer3_4_7_fused= tf.add(layer3_1x1, layer4_7_upsampled)
-#    layer3_4_7_upsampled = upsample_layer(layer3_4_7_fused, num_classes, "layer3_4_7_upsampled",8)
 
     fcn_decoder_l_7=tf.layers.conv2d_transpose(layer7_1x1,num_classes,kernel_size=4,strides=(2,2),padding='SAME',name='fcn_decoder_l_7')
     fcn_decoder_4_7=tf.add(fcn_decoder_l_7,layer4_1x1,name='fcn_decoder_4_7')
@@ -138,7 +82,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     fcn_decoder_3_4_7=tf.add(fcn_decoder_l_4_7,layer3_1x1,name='fcn_decoder_3_4_7')
     fcn_decoder_l_3_4_7=tf.layers.conv2d_transpose(fcn_decoder_3_4_7,num_classes,kernel_size=16,strides=(8,8),padding='SAME',name='fcn_decoder_l_3_4_7')
 
-    return fcn_decoder_l_3_4_7 #layer3_4_7_upsampled
+    return fcn_decoder_l_3_4_7 
 
 tests.test_layers(layers)
 
